@@ -1,0 +1,6 @@
+@Darya.Api_HostAddress = http://localhost:5227
+
+GET {{Darya.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
