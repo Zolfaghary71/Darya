@@ -33,7 +33,9 @@ public class ExchangeRatesApiService : IExchangeRatesService
         var query = HttpUtility.ParseQueryString(string.Empty);
         query["access_key"] = _options.ApiKey;
         query["base"] = baseCurrency;
+        // query["symbols"] = string.Join(",", symbols);
         query["symbols"] = string.Join(",", symbols);
+
 
         var endpoint = $"latest?{query}";
 
