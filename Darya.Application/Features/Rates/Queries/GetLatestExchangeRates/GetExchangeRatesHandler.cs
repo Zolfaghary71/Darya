@@ -29,7 +29,7 @@ public class GetExchangeRatesHandler : IRequestHandler<GetExchangeRatesQuery, Ex
             throw new ValidationException(validationResult);
         }
         
-        var cacheKey = $"ExchangeRates:BTC:{DateTime.Now:yyyy-MM-ddTHH:mm}";
+        var cacheKey = $"ExchangeRates:BTC:{DateTime.Now.AddSeconds(-1):yyyy-MM-ddTHH:mms}";
 
         var rate = await _cacheService.GetAsync<ExchangeRatesResponse>(cacheKey);
         

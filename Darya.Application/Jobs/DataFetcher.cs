@@ -39,7 +39,7 @@ namespace Darya.Application.Jobs
 
                     if (response != null)
                     {
-                        var cacheKey = $"ExchangeRates:{baseCurrency}:{DateTime.Now:yyyy-MM-ddTHH:mm}";
+                        var cacheKey = $"ExchangeRates:{baseCurrency}:{DateTime.Now:yyyy-MM-ddTHH:mms}";
                         await cacheService.SetAsync(cacheKey, response, TimeSpan.FromHours(1));
 
                         _logger.LogInformation("Exchange rates successfully fetched and saved at {Timestamp}.", response.Timestamp);
@@ -54,7 +54,7 @@ namespace Darya.Application.Jobs
                     _logger.LogError(ex, "An error occurred while fetching and persisting exchange rates.");
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
             }
 
             _logger.LogInformation("ExchangeRateBackgroundJob stopped.");
