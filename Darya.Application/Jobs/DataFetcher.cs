@@ -30,25 +30,46 @@ namespace Darya.Application.Jobs
                     var cacheService = scope.ServiceProvider.GetRequiredService<ICacheService>();
 
                     var baseCurrency = "BTC";
-                    var targetCurrencies = new[] {"USD"};
+                    var targetCurrencies = new[] { "USD", "EUR", "BRL", "GBP", "AUD" }; 
 
-                    var response = await exchangeRateProvider.GetLatestRatesAsync(baseCurrency, targetCurrencies);
-
-                    if (response != null)
+                    foreach (var targetCurrency in targetCurrencies)
                     {
-                        var cacheKey = $"ExchangeRates:{baseCurrency}:{DateTime.Now:yyyy-MM-ddTHH:mms}";
-                        await cacheService.SetAsync(cacheKey, response, TimeSpan.FromHours(1));
+                        try
+                        {
+                            var response = await exchangeRateProvider.GetLatestRatesAsync(baseCurrency, new[] { targetCurrency });
 
-                        _logger.LogInformation("Exchange rates successfully fetched and saved at {Timestamp}.", response.Timestamp);
-                    }
-                    else
-                    {
-                        _logger.LogWarning("Received null response from IExchangeRatesProvider.");
+                            if (response != null)
+                            {
+                                var cacheKey = $"ExchangeRates:{baseCurrency}:{targetCurrency}:{DateTime.Now:yyyy-MM-ddTHH:mm}";
+                                await cacheService.SetAsync(cacheKey, response, TimeSpan.FromHours(1));
+
+                                _logger.LogInformation(
+                                    "Exchange rate for {TargetCurrency} successfully fetched and saved at {Timestamp}.",
+                                    targetCurrency,
+                                    response.Timestamp
+                                );
+                            }
+                            else
+                            {
+                                _logger.LogWarning(
+                                    "Received null response from IExchangeRatesProvider for {TargetCurrency}.",
+                                    targetCurrency
+                                );
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(
+                                ex,
+                                "An error occurred while fetching and persisting exchange rate for {TargetCurrency}.",
+                                targetCurrency
+                            );
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "An error occurred while fetching and persisting exchange rates.");
+                    _logger.LogError(ex, "An error occurred in the ExchangeRateBackgroundJob.");
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);

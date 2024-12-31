@@ -2,5 +2,9 @@
 
 public class Quote
 {
-    public USD USD { get; set; }
+    public CurrencyInfo USD { get; set; }
+    public CurrencyInfo EUR { get; set; }
+    public CurrencyInfo BRL { get; set; }
+    public CurrencyInfo GBP { get; set; }
+    public CurrencyInfo AUD { get; set; }
 }

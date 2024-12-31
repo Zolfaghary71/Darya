@@ -1,6 +1,6 @@
 ﻿namespace Darya.Infrastructure.ProxySerivces.CoinMarketCap;
 
-public class USD
+public class CurrencyInfo
 {
     public double Price { get; set; }
     public double Volume24h { get; set; }
