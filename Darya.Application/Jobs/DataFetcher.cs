@@ -1,6 +1,4 @@
-﻿using Darya.Application.Contracts;
-using Darya.Application.Contracts.Infra;
-using Darya.Domain.Entities;
+﻿using Darya.Application.Contracts.Infra;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -33,7 +31,6 @@ namespace Darya.Application.Jobs
 
                     var baseCurrency = "BTC";
                     var targetCurrencies = new[] {"USD"};
-                    //the free versions of 2 APIs only suppert usd
 
                     var response = await exchangeRateProvider.GetLatestRatesAsync(baseCurrency, targetCurrencies);
 
