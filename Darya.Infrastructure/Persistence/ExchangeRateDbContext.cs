@@ -7,7 +7,7 @@ namespace Darya.Infrastructure.Persistence;
 public class ExchangeRateDbContext : DbContext
 {
     public DbSet<ExchangeRateEntity> ExchangeRates { get; set; }
-
+    public DbSet<Cryptocurrency> Cryptos { get; set; }
     public ExchangeRateDbContext(DbContextOptions<ExchangeRateDbContext> options) : base(options)
     {
     }
@@ -22,5 +22,6 @@ public class ExchangeRateDbContext : DbContext
             entity.Property(e => e.Rate).IsRequired();
             entity.Property(e => e.Timestamp).IsRequired();
         });
+        
     }
 }

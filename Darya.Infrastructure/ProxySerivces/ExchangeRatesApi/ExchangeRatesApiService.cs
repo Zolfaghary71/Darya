@@ -1,102 +1,97 @@
-﻿using Darya.Application.Contracts;
-using System.Text.Json;
-using System.Web;
+﻿using Darya.Application.Contracts.Infra;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
+using System.Web;
+using Darya.Infrastructure.ProxySerivces.ExchangeRatesApi;
 
-namespace Darya.Infrastructure.ProxySerivces.ExchangeRatesApi;
-public class ExchangeRatesApiService : IExchangeRatesService
+namespace Darya.Infrastructure.ProxyServices.ExchangeRatesApi
 {
-    private readonly HttpClient _httpClient;
-    private readonly ExchangeRatesApiSettings _options;
-    private readonly ILogger<ExchangeRatesApiService> _logger;
-
-    public ExchangeRatesApiService(
-        HttpClient httpClient,
-        IOptions<ExchangeRatesApiSettings> options,
-        ILogger<ExchangeRatesApiService> logger)
+    public class ExchangeRatesApiService : IExchangeRatesProvider
     {
-        _httpClient = httpClient;
-        _options = options.Value;
-        _logger = logger;
+        private readonly HttpClient _httpClient;
+        private readonly ExchangeRatesApiSettings _options;
+        private readonly ILogger<ExchangeRatesApiService> _logger;
 
-        if (!string.IsNullOrEmpty(_options.BaseUrl))
+        public ExchangeRatesApiService(
+            HttpClient httpClient,
+            IOptions<ExchangeRatesApiSettings> options,
+            ILogger<ExchangeRatesApiService> logger)
         {
-            _httpClient.BaseAddress = new Uri(_options.BaseUrl);
-        }
-    }
+            _httpClient = httpClient;
+            _options = options.Value;
+            _logger = logger;
 
-    public async Task<ExchangeRatesResponse?> GetLatestRatesAsync(
-        string baseCurrency,
-        string[] symbols)
-    {
-        var query = HttpUtility.ParseQueryString(string.Empty);
-        query["access_key"] = _options.ApiKey;
-        query["base"] = baseCurrency;
-        // query["symbols"] = string.Join(",", symbols);
-        query["symbols"] = string.Join(",", symbols);
-
-
-        var endpoint = $"latest?{query}";
-
-        try
-        {
-            var response = await _httpClient.GetAsync(endpoint);
-            if (!response.IsSuccessStatusCode)
+            if (!string.IsNullOrEmpty(_options.BaseUrl))
             {
-                _logger.LogError("Failed to fetch latest rates. Status: {StatusCode}", response.StatusCode);
+                _httpClient.BaseAddress = new Uri(_options.BaseUrl);
+            }
+        }
+
+        public async Task<ExchangeRatesResponse?> GetLatestRatesAsync(string baseCurrency, string[] symbols)
+        {
+            var query = HttpUtility.ParseQueryString(string.Empty);
+            query["access_key"] = _options.ApiKey;
+            query["base"] = baseCurrency;
+            query["symbols"] = string.Join(",", symbols);
+
+            var endpoint = $"latest?{query}";
+
+            try
+            {
+                var response = await _httpClient.GetAsync(endpoint);
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError("Failed to fetch latest rates. Status: {StatusCode}", response.StatusCode);
+                    return null;
+                }
+
+                var content = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<ExchangeRatesResponse>(
+                    content,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calling ExchangeRatesApiService.GetLatestRatesAsync");
                 return null;
             }
-
-            var content = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<ExchangeRatesResponse>(
-                content,
-                new JsonSerializerOptions {PropertyNameCaseInsensitive = true}
-            );
-
-            return result;
         }
-        catch (Exception ex)
+
+        public async Task<ExchangeRatesResponse?> GetHistoricalRatesAsync(string date, string baseCurrency, string[] symbols)
         {
-            _logger.LogError(ex, "Error calling ExchangeRatesApiService.GetLatestRatesAsync");
-            return null;
-        }
-    }
+            var query = HttpUtility.ParseQueryString(string.Empty);
+            query["access_key"] = _options.ApiKey;
+            query["base"] = baseCurrency;
+            query["symbols"] = string.Join(",", symbols);
 
-    public async Task<ExchangeRatesResponse?> GetHistoricalRatesAsync(
-        string date,
-        string baseCurrency,
-        string[] symbols)
-    {
-        var query = HttpUtility.ParseQueryString(string.Empty);
-        query["access_key"] = _options.ApiKey;
-        query["base"] = baseCurrency;
-        query["symbols"] = string.Join(",", symbols);
+            var endpoint = $"{date}?{query}";
 
-        var endpoint = $"{date}?{query}";
-
-        try
-        {
-            var response = await _httpClient.GetAsync(endpoint);
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                _logger.LogError("Failed to fetch historical rates for date {Date}. Status: {StatusCode}", date,
-                    response.StatusCode);
+                var response = await _httpClient.GetAsync(endpoint);
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError("Failed to fetch historical rates for date {Date}. Status: {StatusCode}", date, response.StatusCode);
+                    return null;
+                }
+
+                var content = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<ExchangeRatesResponse>(
+                    content,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calling ExchangeRatesApiService.GetHistoricalRatesAsync");
                 return null;
             }
-
-            var content = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<ExchangeRatesResponse>(
-                content,
-                new JsonSerializerOptions {PropertyNameCaseInsensitive = true}
-            );
-
-            return result;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error calling ExchangeRatesApiService.GetHistoricalRatesAsync");
-            return null;
         }
     }
 }

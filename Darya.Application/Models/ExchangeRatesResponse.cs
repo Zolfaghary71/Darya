@@ -8,7 +8,7 @@ public class ExchangeRatesResponse
     public bool Success { get; set; }
 
     [JsonPropertyName("timestamp")]
-    public long Timestamp { get; set; }
+    public DateTime Timestamp { get; set; }
 
     [JsonPropertyName("base")]
     public string BaseCurrency { get; set; } = string.Empty;
@@ -17,5 +17,5 @@ public class ExchangeRatesResponse
     public string Date { get; set; } = string.Empty;
 
     [JsonPropertyName("rates")]
-    public Dictionary<string, decimal> Rates { get; set; } = new();
+    public double Rates { get; set; }
 }
