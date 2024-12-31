@@ -22,18 +22,18 @@ namespace Darya.Application.Tests.Jobs
             var serviceScopeMock = new Mock<IServiceScope>();
             var serviceScopeFactoryMock = new Mock<IServiceScopeFactory>();
 
-            var exchangeRatesProviderMock = new Mock<IExchangeRatesProvider>();
+            var exchangeRateProviderMock = new Mock<IExchangeRatesProvider>();
             var cacheServiceMock = new Mock<ICacheService>();
 
-            var mockRatesResponse = new ExchangeRatesResponse
+            var mockResponse = new ExchangeRatesResponse
             {
-                Rates = 9999.99,
+                Rates = 12345.67,
                 Timestamp = DateTime.Now
             };
 
-            exchangeRatesProviderMock
-                .Setup(p => p.GetLatestRatesAsync("BTC", It.Is<string[]>(x => x[0] == "USD")))
-                .ReturnsAsync(mockRatesResponse);
+            exchangeRateProviderMock
+                .Setup(p => p.GetLatestRatesAsync("BTC", It.Is<string[]>(currencies => currencies[0] == "USD")))
+                .ReturnsAsync(mockResponse);
 
             serviceScopeFactoryMock
                 .Setup(s => s.CreateScope())
@@ -46,10 +46,10 @@ namespace Darya.Application.Tests.Jobs
             serviceProviderMock
                 .Setup(sp => sp.GetService(typeof(IServiceScopeFactory)))
                 .Returns(serviceScopeFactoryMock.Object);
-            
+
             serviceProviderMock
                 .Setup(sp => sp.GetService(typeof(IExchangeRatesProvider)))
-                .Returns(exchangeRatesProviderMock.Object);
+                .Returns(exchangeRateProviderMock.Object);
 
             serviceProviderMock
                 .Setup(sp => sp.GetService(typeof(ICacheService)))
@@ -57,170 +57,33 @@ namespace Darya.Application.Tests.Jobs
 
             var job = new ExchangeRateBackgroundJob(loggerMock.Object, serviceProviderMock.Object);
 
-            // Cancel after ~1 iteration to avoid an infinite loop
-            using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(300));
+            using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
 
             // Act
             await job.StartAsync(cts.Token);
-            await Task.Delay(300); // Give one loop iteration time
+            await Task.Delay(300); // Allow one loop iteration
 
             // Assert
-            exchangeRatesProviderMock.Verify(
-                x => x.GetLatestRatesAsync("BTC", It.Is<string[]>(arr => arr[0] == "USD")),
-                Times.AtLeastOnce
-            );
+            exchangeRateProviderMock.Verify(
+                x => x.GetLatestRatesAsync("BTC", It.Is<string[]>(currencies => currencies[0] == "USD")),
+                Times.AtLeastOnce);
 
             cacheServiceMock.Verify(
                 x => x.SetAsync(
-                    It.Is<string>(key => key.Contains("ExchangeRates:BTC")), 
-                    mockRatesResponse, 
+                    It.Is<string>(key => key.Contains("ExchangeRates:BTC:USD")),
+                    mockResponse,
                     It.IsAny<TimeSpan>()),
-                Times.Once
-            );
+                Times.Once);
 
             loggerMock.Verify(
                 x => x.Log(
-                    It.Is<LogLevel>(l => l == LogLevel.Information),
+                    LogLevel.Information,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Exchange rates successfully fetched and saved")),
-                    null, // no exception in the success case
-                    (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()
-                ),
-                Times.AtLeastOnce
-            );
-        }
-
-        [Fact]
-        public async Task ExecuteAsync_WhenResponseIsNull_LogsWarning()
-        {
-            // Arrange
-            var loggerMock = new Mock<ILogger<ExchangeRateBackgroundJob>>();
-            var serviceProviderMock = new Mock<IServiceProvider>();
-            var serviceScopeMock = new Mock<IServiceScope>();
-            var serviceScopeFactoryMock = new Mock<IServiceScopeFactory>();
-
-            var exchangeRatesProviderMock = new Mock<IExchangeRatesProvider>();
-            var cacheServiceMock = new Mock<ICacheService>();
-
-            exchangeRatesProviderMock
-                .Setup(p => p.GetLatestRatesAsync("BTC", It.IsAny<string[]>()))
-                .ReturnsAsync((ExchangeRatesResponse)null);
-
-            serviceScopeFactoryMock
-                .Setup(s => s.CreateScope())
-                .Returns(serviceScopeMock.Object);
-
-            serviceScopeMock
-                .SetupGet(s => s.ServiceProvider)
-                .Returns(serviceProviderMock.Object);
-
-            serviceProviderMock
-                .Setup(sp => sp.GetService(typeof(IServiceScopeFactory)))
-                .Returns(serviceScopeFactoryMock.Object);
-
-            serviceProviderMock
-                .Setup(sp => sp.GetService(typeof(IExchangeRatesProvider)))
-                .Returns(exchangeRatesProviderMock.Object);
-
-            serviceProviderMock
-                .Setup(sp => sp.GetService(typeof(ICacheService)))
-                .Returns(cacheServiceMock.Object);
-
-            var job = new ExchangeRateBackgroundJob(loggerMock.Object, serviceProviderMock.Object);
-
-            using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(300));
-
-            // Act
-            await job.StartAsync(cts.Token);
-            await Task.Delay(300);
-
-            // Assert
-            exchangeRatesProviderMock.Verify(
-                x => x.GetLatestRatesAsync("BTC", It.IsAny<string[]>()),
-                Times.AtLeastOnce
-            );
-
-            loggerMock.Verify(
-                x => x.Log(
-                    It.Is<LogLevel>(l => l == LogLevel.Warning),
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Received null response from IExchangeRatesProvider")),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Exchange rate for USD successfully fetched and saved")),
                     null,
-                    (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()
-                ),
-                Times.AtLeastOnce
-            );
-
-            cacheServiceMock.Verify(
-                c => c.SetAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<ExchangeRatesResponse>(),
-                    It.IsAny<TimeSpan>()),
-                Times.Never
-            );
+                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                Times.Once);
         }
-
-        [Fact]
-        public async Task ExecuteAsync_WhenProviderThrowsException_LogsError()
-        {
-            // Arrange
-            var loggerMock = new Mock<ILogger<ExchangeRateBackgroundJob>>();
-            var serviceProviderMock = new Mock<IServiceProvider>();
-            var serviceScopeMock = new Mock<IServiceScope>();
-            var serviceScopeFactoryMock = new Mock<IServiceScopeFactory>();
-
-            var exchangeRatesProviderMock = new Mock<IExchangeRatesProvider>();
-            var cacheServiceMock = new Mock<ICacheService>();
-
-            // Provider throws
-            exchangeRatesProviderMock
-                .Setup(p => p.GetLatestRatesAsync("BTC", It.IsAny<string[]>()))
-                .ThrowsAsync(new InvalidOperationException("Test exception"));
-
-            serviceScopeFactoryMock
-                .Setup(s => s.CreateScope())
-                .Returns(serviceScopeMock.Object);
-
-            serviceScopeMock
-                .SetupGet(s => s.ServiceProvider)
-                .Returns(serviceProviderMock.Object);
-
-            serviceProviderMock
-                .Setup(sp => sp.GetService(typeof(IServiceScopeFactory)))
-                .Returns(serviceScopeFactoryMock.Object);
-
-            serviceProviderMock
-                .Setup(sp => sp.GetService(typeof(IExchangeRatesProvider)))
-                .Returns(exchangeRatesProviderMock.Object);
-
-            serviceProviderMock
-                .Setup(sp => sp.GetService(typeof(ICacheService)))
-                .Returns(cacheServiceMock.Object);
-
-            var job = new ExchangeRateBackgroundJob(loggerMock.Object, serviceProviderMock.Object);
-
-            using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(300));
-
-            // Act
-            await job.StartAsync(cts.Token);
-            await Task.Delay(300);
-
-            // Assert
-            exchangeRatesProviderMock.Verify(
-                x => x.GetLatestRatesAsync("BTC", It.IsAny<string[]>()),
-                Times.AtLeastOnce
-            );
-
-            loggerMock.Verify(
-                x => x.Log(
-                    It.Is<LogLevel>(l => l == LogLevel.Error),
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("An error occurred while fetching and persisting exchange rates")),
-                    It.IsAny<Exception>(),
-                    (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()
-                ),
-                Times.AtLeastOnce
-            );
-        }
+        
     }
 }

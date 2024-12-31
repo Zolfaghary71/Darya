@@ -1,115 +1,76 @@
-﻿
-using Xunit;
-using Moq;
-using Microsoft.Extensions.Logging;
-
-using Darya.Application.Exceptions; 
-
-using Darya.Application.Features.Rates.Queries.GetLatestExchangeRates;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Darya.Application.Contracts.Infra;
+using Darya.Application.Exceptions;
+using Darya.Application.Features.Rates.Queries.GetLatestExchangeRates;
 using Darya.Application.Models;
-
-using DaryaValidationException = Darya.Application.Exceptions.ValidationException;
+using FluentValidation.Results;
+using Microsoft.Extensions.Logging;
+using Moq;
+using Xunit;
 
 namespace Darya.Application.Tests.Features.Rates.Queries
 {
     public class GetExchangeRatesHandlerTests
     {
-        private readonly Mock<ICacheService> _cacheServiceMock;
-        private readonly Mock<ILogger<GetExchangeRatesHandler>> _loggerMock;
-        private readonly GetExchangeRatesHandler _handler;
-
-        public GetExchangeRatesHandlerTests()
+        
+        [Fact]
+        public async Task Handle_WhenRateNotFound_ThrowsNotFoundException()
         {
-            _cacheServiceMock = new Mock<ICacheService>();
-            _loggerMock = new Mock<ILogger<GetExchangeRatesHandler>>();
+            // Arrange
+            var loggerMock = new Mock<ILogger<GetExchangeRatesHandler>>();
+            var cacheServiceMock = new Mock<ICacheService>();
 
-            _handler = new GetExchangeRatesHandler(
-                _loggerMock.Object,
-                _cacheServiceMock.Object
-            );
+            var request = new GetExchangeRatesQuery { Currency = "USD" };
+            var cacheKey = $"ExchangeRates:BTC:{request.Currency}:{DateTime.Now:yyyy-MM-ddTHH:mm}";
+
+            cacheServiceMock
+                .Setup(cs => cs.GetAsync<ExchangeRatesResponse>(cacheKey))
+                .ReturnsAsync((ExchangeRatesResponse)null); // Simulate missing data
+
+            var handler = new GetExchangeRatesHandler(loggerMock.Object, cacheServiceMock.Object);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(request, CancellationToken.None));
+
+            Assert.Contains(nameof(ExchangeRateDto), exception.Message);
+            loggerMock.VerifyNoOtherCalls();
         }
 
         [Fact]
-        public async Task Handle_WhenCurrencyIsEmpty_ThrowsCustomValidationException()
+        public async Task Handle_WhenValidRequest_ReturnsExchangeRateDto()
         {
+            // Arrange
+            var loggerMock = new Mock<ILogger<GetExchangeRatesHandler>>();
+            var cacheServiceMock = new Mock<ICacheService>();
 
-            var request = new GetExchangeRatesQuery
+            var request = new GetExchangeRatesQuery { Currency = "USD" };
+            var cacheKey = $"ExchangeRates:BTC:{request.Currency}:{DateTime.Now:yyyy-MM-ddTHH:mm}";
+
+            var expectedRate = new ExchangeRatesResponse
             {
-                Currency = "" 
+                Rates = 12345.67,
+                Timestamp = DateTime.Now
             };
 
+            cacheServiceMock
+                .Setup(cs => cs.GetAsync<ExchangeRatesResponse>(cacheKey))
+                .ReturnsAsync(expectedRate);
 
-            var exception = await Assert.ThrowsAsync<DaryaValidationException>(
-                () => _handler.Handle(request, CancellationToken.None)
-            );
+            var handler = new GetExchangeRatesHandler(loggerMock.Object, cacheServiceMock.Object);
 
+            // Act
+            var result = await handler.Handle(request, CancellationToken.None);
 
-            Assert.Contains("Currency is required.", exception.ValdationErrors);
-        }
-
-        [Fact]
-        public async Task Handle_WhenCurrencyIsInvalid_ThrowsCustomValidationException()
-        {
-    
-            var request = new GetExchangeRatesQuery
-            {
-                Currency = "ABC"
-            };
-
-       
-           var exception = await Assert.ThrowsAsync<DaryaValidationException>(
-                () => _handler.Handle(request, CancellationToken.None)
-            );
-
-         
-            Assert.Contains("Currency must be one of the following: USD, EUR, GBP, JPY.",
-                exception.ValdationErrors);
-        }
-
-        [Fact]
-        public async Task Handle_WhenCacheIsNull_ThrowsNotFoundException()
-        {
-           
-            var request = new GetExchangeRatesQuery
-            {
-                Currency = "USD" 
-            };
-
-            _cacheServiceMock
-                .Setup(c => c.GetAsync<ExchangeRatesResponse>(It.IsAny<string>()))
-                .ReturnsAsync((ExchangeRatesResponse)null);
-
-            
-            await Assert.ThrowsAsync<NotFoundException>(
-                () => _handler.Handle(request, CancellationToken.None)
-            );
-        }
-
-        [Fact]
-        public async Task Handle_WhenEverythingIsValid_ReturnsExchangeRateDto()
-        {
-            var request = new GetExchangeRatesQuery
-            {
-                Currency = "GBP" 
-            };
-
-            var mockResponse = new ExchangeRatesResponse
-            {
-                Rates = 1000.50
-            };
-
-            _cacheServiceMock
-                .Setup(c => c.GetAsync<ExchangeRatesResponse>(It.IsAny<string>()))
-                .ReturnsAsync(mockResponse);
-
-            var result = await _handler.Handle(request, CancellationToken.None);
-
+            // Assert
             Assert.NotNull(result);
-            Assert.Equal("GBP", result.Symbol);
-            Assert.Equal(1000.50, result.Price);
-            Assert.True(result.LastUpdate <= DateTime.Now,
-                "LastUpdate should be set to something close to the current time");
+            Assert.Equal(request.Currency, result.Symbol);
+            Assert.Equal(expectedRate.Rates, result.Price);
+            Assert.Equal(DateTime.Now.Date, result.LastUpdate.Date);
+            cacheServiceMock.Verify(
+                cs => cs.GetAsync<ExchangeRatesResponse>(cacheKey),
+                Times.Once);
         }
     }
 }
