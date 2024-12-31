@@ -1,11 +1,13 @@
 ﻿using Darya.Application.Features.Rates.Queries.GetLatestExchangeRates;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Darya.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ExchangeRatesController : ControllerBase
 {
     private readonly IMediator _mediator;
