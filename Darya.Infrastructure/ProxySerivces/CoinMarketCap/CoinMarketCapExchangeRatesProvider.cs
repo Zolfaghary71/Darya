@@ -67,7 +67,8 @@ namespace Darya.Infrastructure.ProxySerivces.CoinMarketCap
                 {
                     BaseCurrency = baseCurrency,
                     Rates = result.Data.FirstOrDefault(d=>d.Symbol=="BTC").Quote.USD.Price,
-                    Timestamp = result.Status.Timestamp 
+                    Timestamp = result.Status.Timestamp ,
+                    Success = true,
                 };
 
                 return exchangeRatesResponse;
