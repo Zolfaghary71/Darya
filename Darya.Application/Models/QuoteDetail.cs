@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Darya.Domain.Entities;
+namespace Darya.Application.Models;
 
 public class QuoteDetail
 {

@@ -1,8 +1,8 @@
 ﻿using Darya.Application.Contracts.Infra;
-using Darya.Application.Jobs;
 using Darya.Domain.Entities;
-using Darya.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+
+namespace Darya.Infrastructure.Persistence;
 
 public class ExchangeRateRepository : IExchangeRateRepository
 {

@@ -33,6 +33,7 @@ namespace Darya.Application.Jobs
 
                     var baseCurrency = "BTC";
                     var targetCurrencies = new[] {"USD"};
+                    //the free versions of 2 APIs only suppert usd
 
                     var response = await exchangeRateProvider.GetLatestRatesAsync(baseCurrency, targetCurrencies);
 

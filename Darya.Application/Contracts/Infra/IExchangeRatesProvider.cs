@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Darya.Infrastructure.ProxySerivces.ExchangeRatesApi;
+using Darya.Application.Models;
 
 namespace Darya.Application.Contracts.Infra
 {

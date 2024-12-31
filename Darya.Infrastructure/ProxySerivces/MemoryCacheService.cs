@@ -1,4 +1,5 @@
 ﻿using Darya.Application.Contracts;
+using Darya.Application.Contracts.Infra;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Darya.Infrastructure.ProxySerivces;

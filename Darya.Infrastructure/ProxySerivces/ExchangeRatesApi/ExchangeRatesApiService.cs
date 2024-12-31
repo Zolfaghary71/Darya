@@ -1,11 +1,11 @@
-﻿using Darya.Application.Contracts.Infra;
+﻿using System.Text.Json;
+using System.Web;
+using Darya.Application.Contracts.Infra;
+using Darya.Application.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Text.Json;
-using System.Web;
-using Darya.Infrastructure.ProxySerivces.ExchangeRatesApi;
 
-namespace Darya.Infrastructure.ProxyServices.ExchangeRatesApi
+namespace Darya.Infrastructure.ProxySerivces.ExchangeRatesApi
 {
     public class ExchangeRatesApiService : IExchangeRatesProvider
     {

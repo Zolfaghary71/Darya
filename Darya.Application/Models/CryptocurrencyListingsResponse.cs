@@ -1,8 +1,7 @@
-﻿using Darya.Application.Models;
-using Darya.Domain.Entities;
+﻿using Darya.Domain.Entities;
 using Newtonsoft.Json;
 
-namespace Darya.Infrastructure.ProxySerivces.ExchangeRatesApi;
+namespace Darya.Application.Models;
 
 public class CryptocurrencyListingsResponse
 {

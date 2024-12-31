@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Darya.Infrastructure.ProxySerivces.ExchangeRatesApi;
+namespace Darya.Application.Models;
 
 public class ExchangeRatesResponse
 {

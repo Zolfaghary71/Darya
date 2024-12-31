@@ -1,11 +1,10 @@
 ﻿using Darya.Application.Contracts.Infra;
+using Darya.Application.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Darya.Infrastructure.ProxySerivces.CoinMarketCap;
-using Darya.Infrastructure.ProxySerivces.ExchangeRatesApi;
 
-namespace Darya.Infrastructure.ProxyServices.CoinMarketCap
+namespace Darya.Infrastructure.ProxySerivces.CoinMarketCap
 {
     public class CoinMarketCapExchangeRatesProvider : IExchangeRatesProvider
     {
@@ -28,11 +27,6 @@ namespace Darya.Infrastructure.ProxyServices.CoinMarketCap
             var endpoint = "/v1/cryptocurrency/listings/latest";
             var convertParam = string.Join(",", targetCurrencies);
             var queryParams = $"?start=1&limit=5&convert={convertParam}"; 
-
-            if (_httpClient.DefaultRequestHeaders.Contains("X-CMC_PRO_API_KEY"))
-            {
-                _httpClient.DefaultRequestHeaders.Remove("X-CMC_PRO_API_KEY");
-            }
 
             _httpClient.BaseAddress = new Uri(_settings.BaseUrl);
             _httpClient.DefaultRequestHeaders.Add("X-CMC_PRO_API_KEY", _settings.ApiKey);
