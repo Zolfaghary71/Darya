@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Darya.Application", "Darya.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Darya.Infrastructure", "Darya.Infrastructure\Darya.Infrastructure.csproj", "{68800570-19F2-4040-BDDC-59F5525D0308}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Darya.Tests", "Darya.Tests\Darya.Tests.csproj", "{8AF138A4-6ABF-4849-B206-4CEC0637DD01}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{68800570-19F2-4040-BDDC-59F5525D0308}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{68800570-19F2-4040-BDDC-59F5525D0308}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{68800570-19F2-4040-BDDC-59F5525D0308}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AF138A4-6ABF-4849-B206-4CEC0637DD01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AF138A4-6ABF-4849-B206-4CEC0637DD01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AF138A4-6ABF-4849-B206-4CEC0637DD01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AF138A4-6ABF-4849-B206-4CEC0637DD01}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

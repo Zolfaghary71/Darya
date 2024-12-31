@@ -1,3 +1,4 @@
+using Darya.Api.Middleware;
 using Darya.Application.Contracts;
 using Darya.Application.Contracts.Infra;
 using Darya.Application.Features.Rates.Queries;
@@ -32,6 +33,7 @@ builder.Services.AddControllers();
 var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseMiddleware<ExceptionHandlerMiddleware>();
 app.MapControllers();
 
 app.Run();
