@@ -3,7 +3,7 @@
 ## 1. How long did you spend on the coding assignment?
 I was given one and a half days, of which I spent about 5 hours on the project. 
 
-I wish I had more time to do way better, both in terms of clean code and architecture. I would also spend more time breaking down and cleaning bloated code in some parts of the project. I would use fixtures, replace the current implementation with Redis, and encrypt credentials to enhance security.
+I wish I had more time to do way better, both in terms of clean code and architecture. I would also spend more time breaking down and cleaning bloated code in some parts of the project. I would use fixtures, replace the current implementation with Redis, and encrypt credentials to enhance security. also make the job runner a seperate service.
 
 The reason I chose an in-memory database and this kind of cache is that it could be run with a single click with no configuration.
 
