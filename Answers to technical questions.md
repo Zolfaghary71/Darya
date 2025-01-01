@@ -1,27 +1,47 @@
-1. How long did you spend on the coding assignment?
-i was given one an half day of which i spend about 5 hours on the project. 
-i wish i had more time to do way better both in terms of clean code and architecture.
-i would also spend more time breaking down and cleaning bloated code on some part of the project.
-i would use fixtures. i would use redis instead of this.
-the reason i chose in memory db and this kind of cache is that it could be run with single click with no configuration.
+# Technical Assessment Feedback
 
-2. What would you add to your solution if you had more time?If you didnt spend
-much time on the coding assignment then use this as an opportunity to explain
-what you would add.
-i would add event sourcing and publish events and do event driven architecture. i would creat another project to act as gate way.
+## 1. How long did you spend on the coding assignment?
+I was given one and a half days, of which I spent about 5 hours on the project. 
 
-3. 3. How would you track down a performance issue in production? Have you ever had to do this?
-i would have to find which part of the system is causing it. i would check the resources for each serivce and find bottlenecks.
-i would check logs and perform benchmarking and stress testing to find which parts are causing it.
+I wish I had more time to do way better, both in terms of clean code and architecture. I would also spend more time breaking down and cleaning bloated code in some parts of the project. I would use fixtures, replace the current implementation with Redis, and encrypt credentials to enhance security.
 
-4. What was the latest technical bookyou have read or tech conference you have been to?
-i was in an DDD event last month which ran in ali baba.
-i was reading vaugh vernons book on DDD and i was reading on event sourcing and his idea of it.
+The reason I chose an in-memory database and this kind of cache is that it could be run with a single click with no configuration.
 
-5. Whatdo you think about this technical assessment?
-it was good assesment but i wish i had more time.
+---
 
-6. Please, describe yourself using JSON.
+## 2. What would you add to your solution if you had more time? 
+If you didn’t spend much time on the coding assignment, use this as an opportunity to explain what you would add.
+
+I would add event sourcing and publish events to implement an event-driven architecture. I would create another project to act as a gateway.
+
+---
+
+## 3. How would you track down a performance issue in production? Have you ever had to do this?
+I would identify which part of the system is causing the issue. I would check the resources for each service and locate bottlenecks. 
+
+Steps I would follow:
+- Analyze logs.
+- Perform benchmarking.
+- Conduct stress testing.
+
+These steps would help identify the problematic areas.
+
+---
+
+## 4. What was the latest technical book you have read or tech conference you have been to?
+I attended a DDD event last month hosted by Alibaba. 
+
+I am also reading Vaughn Vernon's book on Domain-Driven Design and studying his ideas on event sourcing.
+
+---
+
+## 5. What do you think about this technical assessment?
+It was a good assessment, but I wish I had more time.
+
+---
+
+## 6. Please, describe yourself using JSON.
+```json
 {
   "name": "Mohammad",
   "profession": "Senior Backend Developer",
